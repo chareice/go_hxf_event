@@ -47,7 +47,7 @@ func listenRedisChannel(channel string){
       log.Println(err)
     }
     data := []byte(msg.Payload)
-    insertEvent(data);
+    go insertEvent(data);
   }
 }
 
@@ -90,6 +90,7 @@ func insertEvent(data []byte) error{
     return err
   }
 
+  log.Printf("插入事件 %+v\n", event)
   return nil
 }
 
