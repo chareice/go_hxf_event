@@ -59,7 +59,7 @@ func getMongoCollection() * mgo.Collection{
 
   session.SetMode(mgo.Monotonic, true)
 
-  return session.DB("hxf_event").C("events")
+  return session.DB("hxf_server").C("events")
 }
 
 func initMongoAddr() string{
