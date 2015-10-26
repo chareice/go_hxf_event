@@ -23,11 +23,6 @@ type Event struct {
 	CreatedAt time.Time
 }
 
-type Test struct {
-	name  string
-	email string
-}
-
 func initRedisUri() string {
 	redis_host := os.Getenv("REDIS_PORT_6379_TCP_ADDR")
 	redis_port := os.Getenv("REDIS_PORT_6379_TCP_PORT")
@@ -100,20 +95,16 @@ func insertEvent(data []byte) error {
 	log.Printf("插入事件 %+v\n", event)
 	return nil
 }
-func insertMongoByHttp(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println([]byte(body))
-	var event Event
-	err = json.Unmarshal(body, &event)
-	if err != nil {
-		log.Println(err)
-	}
-	data := []byte(event)
-	go insertEvent(data)
 
+func insertMongoByHttp(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Println(err)
+		} else {
+			go insertEvent(body)
+		}
+	}
 }
 
 func main() {
@@ -126,5 +117,4 @@ func main() {
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
-
 }
