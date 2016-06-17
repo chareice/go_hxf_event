@@ -13,7 +13,7 @@ import (
 )
 
 var mongoCollection = getMongoCollection()
-var client = redis.NewClient(&redis.Options{Addr: initRedisUri(), DB: 12})
+var client = redis.NewClient(&redis.Options{Addr: initRedisUri()})
 
 type Event struct {
 	Category  string            `json:"category"`
@@ -38,6 +38,11 @@ func initRedisUri() string {
 
 //监听队列消息
 func listenRedisChannel(channel string) {
+	redis_auth := os.Getenv("REDIS_AUTH")
+	if len(redis_auth) > 0 {
+		client.Auth(redis_auth)
+	}
+
 	pubsub, err := client.Subscribe(channel)
 	if err != nil {
 		panic(err)
@@ -109,7 +114,12 @@ func insertMongoByHttp(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	//监听事件队列
-	go listenRedisChannel("hxf.push.events")
+	channel := os.Getenv("LISTEN_CHANNEL")
+	if len(channel) == 0 {
+		channel = "hxf.push.events"
+	}
+
+	go listenRedisChannel(channel)
 	fmt.Println("监听队列准备就绪...")
 	fmt.Println("事件接收服务启动成功(ง •̀_•́)ง")
 	http.HandleFunc("/root", insertMongoByHttp)
